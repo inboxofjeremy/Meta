@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "YOUR_TMDB_API_KEY";
+const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc";
 
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
