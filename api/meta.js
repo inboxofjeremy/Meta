@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-
 const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc";
 
 export default async function handler(req, res) {
@@ -7,10 +6,9 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") return res.status(200).end();
-  res.setHeader("Content-Type", "application/json");
 
+  res.setHeader("Content-Type", "application/json");
   const { searchParams } = new URL(req.url, `http://${req.headers.host}`);
   const id = searchParams.get("id");
   if (!id) return res.status(400).json({ error: "Missing id" });
@@ -28,7 +26,7 @@ export default async function handler(req, res) {
         name: data.name,
         poster: data.image?.medium || null,
         background: data.image?.original || null,
-        description: data.summary?.replace(/<[^>]+>/g, "") || "",
+        description: data.summary?.replace(/<[^>]+>/g,"") || "",
         released: data.premiered || "",
         genres: data.genres || []
       };
@@ -44,13 +42,11 @@ export default async function handler(req, res) {
         background: data.backdrop_path ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}` : null,
         description: data.overview || "",
         released: data.release_date || "",
-        genres: data.genres?.map(g => g.name) || []
+        genres: data.genres?.map(g=>g.name) || []
       };
     }
-  } catch (err) {
-    console.error("Meta error:", err.message);
-  }
+  } catch(err) { console.error("Meta error:", err.message); }
 
-  if (!meta) return res.status(404).json({ error: "Meta not found" });
+  if (!meta) return res.status(404).json({ error:"Meta not found" });
   res.json(meta);
 }
