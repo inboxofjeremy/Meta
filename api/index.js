@@ -1,90 +1,69 @@
-// api/index.js
 import fetch from "node-fetch";
 
-const META_DIR = {}; // in-memory storage for demo
+const TMDB_API_KEY = "YOUR_TMDB_API_KEY"; // replace with your TMDb API key
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "*");
-  if (req.method === "OPTIONS") return res.status(200).end();
+  const query = req.query.q;
+  const type = req.query.type || "all"; // movie or series
 
-  const url = req.url || "/";
-  const [path, queryString] = url.split("?");
-  const params = new URLSearchParams(queryString || "");
-
-  // --- manifest.json ---
-  if (path === "/manifest.json") {
-    return res.status(200).json({
-      id: "tvmaze_search_addon",
-      version: "1.0.0",
-      name: "TVMaze Search",
-      description: "Search TVMaze shows dynamically",
-      types: ["series"],
-      resources: ["catalog", "meta"],
-      catalogs: [
-        {
-          type: "series",
-          id: "search",
-          name: "Search",
-          extra: [{ name: "search", isRequired: false }]
-        }
-      ],
-      idPrefixes: ["tvmaze"]
-    });
+  if (!query) {
+    return res.status(400).json({ error: "Missing query parameter" });
   }
 
-  // --- catalog.json?search=QUERY ---
-  if (path === "/catalog.json") {
-    const searchQuery = params.get("search") || "game";
-    try {
-      const results = await fetch(
-        `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(searchQuery)}`
-      ).then(r => r.json());
+  let results = [];
 
-      const metas = [];
-      for (const r of results) {
-        const show = r.show;
-        if (!show?.id) continue;
+  // 1️⃣ TVMaze search (series only)
+  try {
+    const tvmazeResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
+    const tvmazeData = await tvmazeResp.json();
 
-        // Prepare meta for episodes
-        const epsData = await fetch(
-          `https://api.tvmaze.com/shows/${show.id}?embed=episodes`
-        ).then(r => r.json());
-        const videos = (epsData._embedded?.episodes || []).map(ep => ({
-          id: `tvmaze:${ep.id}`,
-          title: ep.name,
-          season: ep.season,
-          episode: ep.number,
-          released: ep.airdate,
-          overview: ep.summary ? ep.summary.replace(/<[^>]+>/g, "") : "",
-        }));
+    results = tvmazeData.map(item => ({
+      id: `tvmaze:${item.show.id}`,
+      type: "series",
+      name: item.show.name,
+      poster: item.show.image?.medium || null,
+      imdb_id: item.show.externals?.imdb || null
+    }));
+  } catch (err) {
+    console.error("TVMaze error:", err.message);
+  }
 
-        // Store in memory
-        META_DIR[`tvmaze:${show.id}`] = { meta: { ...show, videos } };
+  // 2️⃣ TMDb fallback
+  try {
+    const tmdbType = type === "movie" ? "movie" : "tv";
+    const tmdbResp = await fetch(
+      `https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+    );
+    const tmdbData = await tmdbResp.json();
 
-        metas.push({
-          id: `tvmaze:${show.id}`,
-          type: "series",
-          name: show.name,
-          description: show.summary ? show.summary.replace(/<[^>]+>/g, "") : "",
-          poster: show.image?.medium || show.image?.original || null,
-          background: show.image?.original || null,
-        });
+    for (const item of tmdbData.results) {
+      // Skip duplicates
+      if (results.some(r => r.name === (item.title || item.name))) continue;
+
+      // Fetch full TMDb details to get IMDb ID
+      let imdb_id = null;
+      try {
+        const detailsResp = await fetch(
+          `https://api.themoviedb.org/3/${tmdbType}/${item.id}?api_key=${TMDB_API_KEY}`
+        );
+        const details = await detailsResp.json();
+        imdb_id = details.imdb_id || null;
+      } catch (err) {
+        console.error("TMDb details fetch error:", err.message);
       }
 
-      return res.status(200).json({ metas });
-    } catch (e) {
-      return res.status(500).json({ error: e.message });
+      results.push({
+        id: `tmdb:${item.id}`,
+        type: tmdbType,
+        name: item.title || item.name,
+        poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+        imdb_id
+      });
     }
+  } catch (err) {
+    console.error("TMDb search error:", err.message);
   }
 
-  // --- meta.json?id=tvmaze:{id} ---
-  if (path === "/meta.json") {
-    const id = params.get("id");
-    if (!id || !META_DIR[id]) return res.status(404).json({ meta: null });
-    return res.status(200).json(META_DIR[id]);
-  }
-
-  return res.status(404).send("Not Found");
+  res.setHeader("Content-Type", "application/json");
+  res.json(results);
 }
