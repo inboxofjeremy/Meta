@@ -22,16 +22,12 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-/* =========================
-   HANDLER
-========================= */
 export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
 
-  // IMPORTANT: explicitly expose manifest.json
-  if (req.url === "/api/manifest.json") {
-    res.status(200).json(manifest);
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
     return;
   }
 
