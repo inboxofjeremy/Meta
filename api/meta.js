@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc";
+const TMDB_API_KEY = "YOUR_TMDB_API_KEY";
 
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
@@ -23,7 +23,8 @@ export default async function handler(req, res) {
         poster: data.image?.medium || null,
         background: data.image?.original || null,
         description: data.summary?.replace(/<[^>]+>/g, "") || "",
-        released: data.premiered || ""
+        released: data.premiered || "",
+        genres: data.genres || []
       };
     } else if (id.startsWith("tmdb:")) {
       const tmdbId = id.split(":")[1];
@@ -37,7 +38,8 @@ export default async function handler(req, res) {
         poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null,
         background: data.backdrop_path ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}` : null,
         description: data.overview || "",
-        released: data.release_date || data.first_air_date || ""
+        released: data.release_date || data.first_air_date || "",
+        genres: data.genres?.map(g => g.name) || []
       };
     }
   } catch (err) {
@@ -45,6 +47,5 @@ export default async function handler(req, res) {
   }
 
   if (!meta) return res.status(404).json({ error: "Meta not found" });
-
   res.json(meta);
 }
