@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
   let results = [];
 
-  // TVMaze search (series)
+  // TVMaze series
   if (type === "series" || type === "all") {
     try {
       const tvResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // TMDb search (movies)
+  // TMDb movies
   if (type === "movie" || type === "all") {
     try {
       const tmdbResp = await fetch(
