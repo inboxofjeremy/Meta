@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "YOUR_TMDB_API_KEY"; // replace with your TMDb API key
+const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc"; // replace with your TMDb API key
 
 export default async function handler(req, res) {
   const query = req.query.q;
@@ -29,30 +29,39 @@ export default async function handler(req, res) {
   }
 
   // 2️⃣ TMDb fallback
-  if (!results.length || results.some(r => !r.imdb_id)) {
-    try {
-      const tmdbType = type === "movie" ? "movie" : "tv";
-      const tmdbResp = await fetch(
-        `https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
-      );
-      const tmdbData = await tmdbResp.json();
+  try {
+    const tmdbType = type === "movie" ? "movie" : "tv";
+    const tmdbResp = await fetch(
+      `https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+    );
+    const tmdbData = await tmdbResp.json();
 
-      const fallbackResults = tmdbData.results.map(item => ({
+    for (const item of tmdbData.results) {
+      // Skip duplicates
+      if (results.some(r => r.name === (item.title || item.name))) continue;
+
+      // Fetch full TMDb details to get IMDb ID
+      let imdb_id = null;
+      try {
+        const detailsResp = await fetch(
+          `https://api.themoviedb.org/3/${tmdbType}/${item.id}?api_key=${TMDB_API_KEY}`
+        );
+        const details = await detailsResp.json();
+        imdb_id = details.imdb_id || null;
+      } catch (err) {
+        console.error("TMDb details fetch error:", err.message);
+      }
+
+      results.push({
         id: `tmdb:${item.id}`,
         type: tmdbType,
         name: item.title || item.name,
         poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
-        imdb_id: null // TMDb search results do not provide IMDb ID directly
-      }));
-
-      // Merge with TVMaze results, avoiding duplicates
-      const existingIds = new Set(results.map(r => r.id));
-      fallbackResults.forEach(r => {
-        if (!existingIds.has(r.id)) results.push(r);
+        imdb_id
       });
-    } catch (err) {
-      console.error("TMDb error:", err.message);
     }
+  } catch (err) {
+    console.error("TMDb search error:", err.message);
   }
 
   res.setHeader("Content-Type", "application/json");
