@@ -42,10 +42,9 @@ export default async function handler(req, res) {
       };
     }
   } catch (err) {
-    console.error("Meta fetch error:", err.message);
+    console.error("Meta error:", err.message);
   }
 
   if (!meta) return res.status(404).json({ error: "Meta not found" });
-
   res.json(meta);
 }
