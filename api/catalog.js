@@ -6,8 +6,9 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const query = req.query.q || "a"; // default query to return results
-  const type = req.query.type || "all";
+  const { searchParams } = new URL(req.url, `http://${req.headers.host}`);
+  const query = searchParams.get("q") || "a";
+  const type = searchParams.get("type") || "all";
 
   let results = [];
 
@@ -30,7 +31,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // TMDb fallback
+  // TMDb search (movies)
   if (type === "movie" || type === "all") {
     try {
       const tmdbResp = await fetch(
