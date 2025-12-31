@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const query = req.query.q || ""; // Empty string = default catalog
+  const query = req.query.q || "a"; // default query to return results
   const type = req.query.type || "all";
 
   let results = [];
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   // TVMaze search (series)
   if (type === "series" || type === "all") {
     try {
-      const tvResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query || "a")}`);
+      const tvResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
       const tvData = await tvResp.json();
       results.push(...tvData.map(item => ({
         id: `tvmaze:${item.show.id}`,
@@ -33,20 +33,19 @@ export default async function handler(req, res) {
   // TMDb fallback
   if (type === "movie" || type === "all") {
     try {
-      const tmdbType = type === "movie" ? "movie" : "tv";
       const tmdbResp = await fetch(
-        `https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query || "a")}`
+        `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
       );
       const tmdbData = await tmdbResp.json();
       for (const item of tmdbData.results) {
-        if (results.some(r => r.name === (item.title || item.name))) continue;
+        if (results.some(r => r.name === item.title)) continue;
         results.push({
           id: `tmdb:${item.id}`,
-          type: tmdbType,
-          name: item.title || item.name,
+          type: "movie",
+          name: item.title,
           poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
           genres: item.genre_ids || [],
-          released: item.release_date || item.first_air_date || "",
+          released: item.release_date || "",
           imdb_id: null
         });
       }
