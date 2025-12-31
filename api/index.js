@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "YOUR_TMDB_API_KEY"; // replace with your TMDb API key
+const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc"; // replace with your TMDb API key
 
 export default async function handler(req, res) {
   const query = req.query.q;
