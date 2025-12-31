@@ -1,0 +1,8 @@
+{
+  "name": "tvmaze-tmdb-search-addon",
+  "type": "module",
+  "dependencies": {
+    "stremio-addon-sdk": "^1.6.10",
+    "node-fetch": "^3.3.2"
+  }
+}
