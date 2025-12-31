@@ -1,5 +1,5 @@
 {
-  "name": "stremio-meta-stream",
+  "name": "stremio-addon",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
