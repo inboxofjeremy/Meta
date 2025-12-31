@@ -1,6 +1,11 @@
 export default async function handler(req, res) {
-  res.setHeader("Content-Type", "application/json");
+  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+  res.setHeader("Content-Type", "application/json");
 
   const { searchParams } = new URL(req.url, `http://${req.headers.host}`);
   const id = searchParams.get("id");
