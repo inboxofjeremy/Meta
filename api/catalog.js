@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-
 const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc";
 
 export default async function handler(req, res) {
@@ -7,8 +6,8 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") return res.status(200).end();
+
   res.setHeader("Content-Type", "application/json");
 
   const { searchParams } = new URL(req.url, `http://${req.headers.host}`);
@@ -31,9 +30,7 @@ export default async function handler(req, res) {
         released: item.show.premiered || "",
         imdb_id: item.show.externals?.imdb || null
       })));
-    } catch (err) {
-      console.error("TVMaze error:", err.message);
-    }
+    } catch(err) { console.error("TVMaze error:", err.message); }
   }
 
   // TMDb movies
@@ -55,9 +52,7 @@ export default async function handler(req, res) {
           imdb_id: null
         });
       }
-    } catch (err) {
-      console.error("TMDb error:", err.message);
-    }
+    } catch(err) { console.error("TMDb error:", err.message); }
   }
 
   res.json(results);
