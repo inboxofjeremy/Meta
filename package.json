@@ -1,7 +1,6 @@
 {
-  "name": "stremio-tvmaze-tmdb",
+  "name": "stremio-meta-stream",
   "version": "1.0.0",
-  "description": "Stremio catalog + meta addon using TVMaze + TMDb",
   "type": "module",
   "dependencies": {
     "node-fetch": "^3.3.2"
