@@ -6,9 +6,21 @@ export default function handler(req, res) {
     id: "tvmaze-tmdb-catalog",
     version: "1.0.0",
     name: "TVMaze + TMDb Catalog",
-    description: "Catalog addon using TVMaze + TMDb, returning IMDb IDs",
+    description: "Catalog addon using TVMaze + TMDb with IMDb IDs",
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
-    idPrefixes: ["tt", "tvmaze"]
+    idPrefixes: ["tt", "tvmaze"],
+    catalogs: [
+      {
+        type: "movie",
+        id: "default_movies",
+        name: "Movies"
+      },
+      {
+        type: "series",
+        id: "default_series",
+        name: "Series"
+      }
+    ]
   });
 }
