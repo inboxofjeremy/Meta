@@ -1,8 +1,10 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc"; // replace with your TMDb API key
+const TMDB_API_KEY = "YOUR_TMDB_API_KEY"; // replace with your TMDb API key
 
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // CORS
+
   const query = req.query.q;
   const type = req.query.type || "all"; // movie or series
 
@@ -12,7 +14,7 @@ export default async function handler(req, res) {
 
   let results = [];
 
-  // 1️⃣ TVMaze search (series only)
+  // 1️⃣ TVMaze search
   try {
     const tvmazeResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
     const tvmazeData = await tvmazeResp.json();
@@ -37,10 +39,9 @@ export default async function handler(req, res) {
     const tmdbData = await tmdbResp.json();
 
     for (const item of tmdbData.results) {
-      // Skip duplicates
       if (results.some(r => r.name === (item.title || item.name))) continue;
 
-      // Fetch full TMDb details to get IMDb ID
+      // Get IMDb ID from TMDb details
       let imdb_id = null;
       try {
         const detailsResp = await fetch(
