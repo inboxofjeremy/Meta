@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: "Missing id" });
 
-  // Example: return a dummy HTTP stream
+  // Example dummy stream
   res.json([
     {
       title: "HD Stream",
