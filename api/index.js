@@ -7,17 +7,15 @@ export default function handler(req, res) {
     return;
   }
 
+  // req.url will be like '/manifest.json' or '/catalog.json' inside api/index.js
   const url = req.url;
 
-  // ----------------------
-  // Manifest endpoint
-  // ----------------------
-  if (url === "/api/manifest.json") {
+  if (url === "/manifest.json") {
     res.status(200).json({
       id: "tvmaze.tmdb.fixed",
       version: "1.0.0",
       name: "TVMaze + TMDB Fixed",
-      description: "Minimal Stremio addon with fixed endpoints",
+      description: "Minimal Stremio addon",
       resources: ["catalog", "meta", "stream"],
       types: ["series"],
       catalogs: [
@@ -32,33 +30,20 @@ export default function handler(req, res) {
     return;
   }
 
-  // ----------------------
-  // Catalog endpoint
-  // ----------------------
-  if (url === "/api/catalog.json") {
-    // Return empty catalog for now
+  if (url === "/catalog.json") {
     res.status(200).json({ metas: [] });
     return;
   }
 
-  // ----------------------
-  // Meta endpoint
-  // ----------------------
-  if (url === "/api/meta.json") {
-    // Return empty meta for now
+  if (url === "/meta.json") {
     res.status(200).json({ meta: null });
     return;
   }
 
-  // ----------------------
-  // Stream endpoint
-  // ----------------------
-  if (url === "/api/stream.json") {
-    // Return empty streams
+  if (url === "/stream.json") {
     res.status(200).json({ streams: [] });
     return;
   }
 
-  // All other routes
   res.status(404).send("Not Found");
 }
