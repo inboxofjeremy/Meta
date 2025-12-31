@@ -25,21 +25,9 @@ const builder = new addonBuilder(manifest);
 /* =========================
    REQUIRED HANDLERS
 ========================= */
-
-// CATALOG (search)
-builder.defineCatalogHandler(async () => {
-  return { metas: [] };
-});
-
-// META (show + episodes)
-builder.defineMetaHandler(async () => {
-  return { meta: null };
-});
-
-// STREAM (playback)
-builder.defineStreamHandler(async () => {
-  return { streams: [] };
-});
+builder.defineCatalogHandler(async () => ({ metas: [] }));
+builder.defineMetaHandler(async () => ({ meta: null }));
+builder.defineStreamHandler(async () => ({ streams: [] }));
 
 /* =========================
    VERCEL HANDLER
@@ -53,5 +41,13 @@ export default function handler(req, res) {
     return;
   }
 
-  return builder.getInterface()(req, res);
+  // SAFELY call getInterface
+  const interfaceHandler = builder.getInterface;
+  if (typeof interfaceHandler !== "function") {
+    console.error("getInterface is not a function", interfaceHandler);
+    res.status(500).send("Internal Server Error");
+    return;
+  }
+
+  return interfaceHandler(req, res);
 }
