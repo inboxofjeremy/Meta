@@ -22,6 +22,28 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
+/* =========================
+   REQUIRED HANDLERS
+========================= */
+
+// CATALOG (search)
+builder.defineCatalogHandler(async () => {
+  return { metas: [] };
+});
+
+// META (show + episodes)
+builder.defineMetaHandler(async () => {
+  return { meta: null };
+});
+
+// STREAM (playback)
+builder.defineStreamHandler(async () => {
+  return { streams: [] };
+});
+
+/* =========================
+   VERCEL HANDLER
+========================= */
 export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
