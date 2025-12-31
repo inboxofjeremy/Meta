@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import { addonBuilder } from "stremio-addon-sdk";
 
 /* =========================
-   CONFIG
+   CONFIGs
 ========================= */
 const TMDB_KEY = process.env.TMDB_KEY;
 
