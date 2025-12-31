@@ -1,12 +1,13 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "YOUR_TMDB_API_KEY"; // replace with your TMDb API key
+const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc"; // Replace with your key
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*"); // CORS
+  res.setHeader("Content-Type", "application/json");
 
   const query = req.query.q;
-  const type = req.query.type || "all"; // movie or series
+  const type = req.query.type || "all";
 
   if (!query) {
     return res.status(400).json({ error: "Missing query parameter" });
@@ -14,12 +15,11 @@ export default async function handler(req, res) {
 
   let results = [];
 
-  // 1️⃣ TVMaze search
+  // TVMaze search
   try {
-    const tvmazeResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
-    const tvmazeData = await tvmazeResp.json();
-
-    results = tvmazeData.map(item => ({
+    const tvResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
+    const tvData = await tvResp.json();
+    results = tvData.map(item => ({
       id: `tvmaze:${item.show.id}`,
       type: "series",
       name: item.show.name,
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     console.error("TVMaze error:", err.message);
   }
 
-  // 2️⃣ TMDb fallback
+  // TMDb fallback
   try {
     const tmdbType = type === "movie" ? "movie" : "tv";
     const tmdbResp = await fetch(
@@ -41,7 +41,6 @@ export default async function handler(req, res) {
     for (const item of tmdbData.results) {
       if (results.some(r => r.name === (item.title || item.name))) continue;
 
-      // Get IMDb ID from TMDb details
       let imdb_id = null;
       try {
         const detailsResp = await fetch(
@@ -50,7 +49,7 @@ export default async function handler(req, res) {
         const details = await detailsResp.json();
         imdb_id = details.imdb_id || null;
       } catch (err) {
-        console.error("TMDb details fetch error:", err.message);
+        console.error("TMDb details error:", err.message);
       }
 
       results.push({
@@ -65,6 +64,5 @@ export default async function handler(req, res) {
     console.error("TMDb search error:", err.message);
   }
 
-  res.setHeader("Content-Type", "application/json");
   res.json(results);
 }
