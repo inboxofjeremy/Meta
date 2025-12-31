@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc"; // Replace with your key
+const TMDB_API_KEY = "944017b839d3c040bdd2574083e4c1bc"; // replace with your key
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*"); // CORS
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   let results = [];
 
-  // TVMaze search
+  // 1️⃣ TVMaze search
   try {
     const tvResp = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
     const tvData = await tvResp.json();
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     console.error("TVMaze error:", err.message);
   }
 
-  // TMDb fallback
+  // 2️⃣ TMDb fallback
   try {
     const tmdbType = type === "movie" ? "movie" : "tv";
     const tmdbResp = await fetch(
@@ -41,6 +41,7 @@ export default async function handler(req, res) {
     for (const item of tmdbData.results) {
       if (results.some(r => r.name === (item.title || item.name))) continue;
 
+      // Fetch IMDb ID from TMDb details
       let imdb_id = null;
       try {
         const detailsResp = await fetch(
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
         const details = await detailsResp.json();
         imdb_id = details.imdb_id || null;
       } catch (err) {
-        console.error("TMDb details error:", err.message);
+        console.error("TMDb details fetch error:", err.message);
       }
 
       results.push({
