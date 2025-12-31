@@ -6,8 +6,8 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const { type, id } = req.query;
-  if (!type || !id) return res.status(400).json({ error: "Missing type or id" });
+  const { id } = req.query;
+  if (!id) return res.status(400).json({ error: "Missing id" });
 
   let meta = null;
 
@@ -28,17 +28,16 @@ export default async function handler(req, res) {
       };
     } else if (id.startsWith("tmdb:")) {
       const tmdbId = id.split(":")[1];
-      const tmdbType = type === "movie" ? "movie" : "tv";
-      const resp = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${TMDB_API_KEY}`);
+      const resp = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`);
       const data = await resp.json();
       meta = {
         id,
-        type,
-        name: data.title || data.name,
+        type: "movie",
+        name: data.title,
         poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null,
         background: data.backdrop_path ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}` : null,
         description: data.overview || "",
-        released: data.release_date || data.first_air_date || "",
+        released: data.release_date || "",
         genres: data.genres?.map(g => g.name) || []
       };
     }
@@ -47,5 +46,6 @@ export default async function handler(req, res) {
   }
 
   if (!meta) return res.status(404).json({ error: "Meta not found" });
+
   res.json(meta);
 }
