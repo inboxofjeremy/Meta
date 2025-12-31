@@ -1,8 +1,7 @@
 {
   "name": "stremio-tvmaze-tmdb",
   "version": "1.0.0",
-  "description": "Stremio search addon using TVMaze + TMDb",
-  "main": "index.js",
+  "description": "Stremio search addon using TVMaze + TMDb with IMDb IDs",
   "type": "module",
   "dependencies": {
     "node-fetch": "^3.3.2"
