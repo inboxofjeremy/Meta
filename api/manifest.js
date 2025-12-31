@@ -3,24 +3,12 @@ export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   res.json({
-    id: "tvmaze-tmdb-catalog",
+    id: "tvmaze-tmdb-meta",
     version: "1.0.0",
-    name: "TVMaze + TMDb Catalog",
-    description: "Catalog addon using TVMaze + TMDb with IMDb IDs",
-    resources: ["catalog", "meta"],
+    name: "TVMaze + TMDb Meta/Stream",
+    description: "Search addon using TVMaze + TMDb returning IMDb IDs and streams",
+    resources: ["meta", "stream"],
     types: ["movie", "series"],
     idPrefixes: ["tt", "tvmaze"],
-    catalogs: [
-      {
-        type: "movie",
-        id: "default_movies",
-        name: "Movies"
-      },
-      {
-        type: "series",
-        id: "default_series",
-        name: "Series"
-      }
-    ]
   });
 }
